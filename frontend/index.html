@@ -580,10 +580,22 @@
                         
                         // 使用取得的 LIFF ID 進行初始化
                         liff.init({
-                            liffId: config.data.liffId
+                            liffId: config.data.liffId,
+                            scope: 'profile openid'
                         }).then(() => {
                             if (config.data.environment === 'development') {
                                 console.log('LIFF 初始化成功');
+                                console.log('LIFF 登入狀態：', liff.isLoggedIn());
+                                console.log('LIFF 環境：', liff.isInClient() ? 'LINE App內' : '外部瀏覽器');
+                                
+                                // 檢查用戶是否已授權
+                                if (liff.isLoggedIn()) {
+                                    console.log('用戶已登入，可以獲取profile');
+                                } else {
+                                    console.log('用戶未登入，需要授權');
+                                    // 嘗試登入
+                                    liff.login();
+                                }
                             }
                             initializeForm();
                         }).catch((err) => {
@@ -749,11 +761,31 @@
                 // 獲取 LIFF 用戶資訊（如果可用）
                 if (typeof liff !== 'undefined' && liff.isLoggedIn()) {
                     try {
+                        console.log('LIFF 登入狀態：', liff.isLoggedIn());
+                        console.log('LIFF 環境：', liff.isInClient() ? 'LINE App內' : '外部瀏覽器');
+                        
                         const profile = await liff.getProfile();
+                        console.log('獲取到用戶資料：', profile);
+                        
                         surveyData.lineUserId = profile.userId;
                         surveyData.displayName = profile.displayName;
+                        
+                        console.log('已設定 LINE 用戶資料：', {
+                            lineUserId: surveyData.lineUserId,
+                            displayName: surveyData.displayName
+                        });
                     } catch (err) {
-                        // 靜默處理錯誤，避免在生產環境暴露資訊
+                        console.error('獲取 LIFF 用戶資料失敗：', err);
+                        // 在開發環境顯示錯誤，生產環境靜默處理
+                        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                            console.error('LIFF 錯誤詳情：', err);
+                        }
+                    }
+                } else {
+                    console.log('LIFF 未登入或不可用');
+                    if (typeof liff !== 'undefined') {
+                        console.log('LIFF 登入狀態：', liff.isLoggedIn());
+                        console.log('LIFF 環境：', liff.isInClient() ? 'LINE App內' : '外部瀏覽器');
                     }
                 }
 
