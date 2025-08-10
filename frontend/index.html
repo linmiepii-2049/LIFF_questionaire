@@ -528,8 +528,11 @@
     <script>
         // LIFF 初始化
         window.onload = function() {
+            // 生產環境的後端 API URL
+            const API_BASE_URL = 'https://liff-survey-worker.survey-api.workers.dev';
+            
             // 先取得 LIFF 配置
-            fetch('/api/config')
+            fetch(`${API_BASE_URL}/api/config`)
                 .then(response => response.json())
                 .then(config => {
                     if (config.success && config.data.liffId) {
@@ -656,6 +659,9 @@
             loading.classList.add('show');
 
             try {
+                // 生產環境的後端 API URL
+                const API_BASE_URL = 'https://liff-survey-worker.survey-api.workers.dev';
+                
                 // 收集表單資料
                 const formData = new FormData(e.target);
                 const surveyData = {
@@ -690,7 +696,7 @@
                 }
 
                 // 發送到後端 API
-                const response = await fetch('/api/survey', {
+                const response = await fetch(`${API_BASE_URL}/api/survey`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
