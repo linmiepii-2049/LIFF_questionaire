@@ -8,6 +8,8 @@
 <body>
     <h1>問卷提交測試</h1>
     <button onclick="testSubmit()">測試問卷提交</button>
+    <button onclick="testDuplicateSubmit()">測試重複提交</button>
+    <button onclick="testInvalidPhone()">測試無效手機號碼</button>
     <div id="result"></div>
 
     <script>
@@ -54,6 +56,106 @@
                 } else {
                     const errorData = await response.json();
                     resultDiv.innerHTML = `<p style="color: red;">❌ 錯誤 ${response.status}：${JSON.stringify(errorData, null, 2)}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">❌ 網路錯誤：${error.message}</p>`;
+            }
+        }
+
+        // 測試重複提交
+        async function testDuplicateSubmit() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '正在測試重複提交...';
+            
+            try {
+                const surveyData = {
+                    memberId: "0933333335", // 使用相同的手機號碼
+                    phone: "0933333335",
+                    age: "26-45歲",
+                    gender: "男", // 改變性別測試
+                    location: "外地", // 改變居住地測試
+                    purchase_frequency: "每週1~3次",
+                    purchase_location: ["便利商店"],
+                    purchase_time: "下午(12:00~17:00)",
+                    meal_type: "點心",
+                    purchase_factors: ["價格", "好吃"],
+                    health_price: "不會",
+                    natural_preference: "不在意",
+                    taste_preference: ["甜"],
+                    bread_types: ["台式、日式麵包"],
+                    bread_types_other: "",
+                    favorite_bread: "紅豆麵包",
+                    desired_bread: "",
+                    lineUserId: "test_user_frontend_duplicate",
+                    displayName: "前端測試用戶重複",
+                    timestamp: new Date().toISOString()
+                };
+
+                const response = await fetch('https://liff-survey-worker.survey-api.workers.dev/api/survey', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer d92ebeb6b6e1b6790d02879d7c2c04d0fae71f4a9b608523cc07a3add72a808d'
+                    },
+                    body: JSON.stringify(surveyData)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `<p style="color: green;">✅ 重複提交結果：${JSON.stringify(data, null, 2)}</p>`;
+                } else {
+                    const errorData = await response.json();
+                    resultDiv.innerHTML = `<p style="color: orange;">⚠️ 重複提交預期錯誤：${JSON.stringify(errorData, null, 2)}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">❌ 網路錯誤：${error.message}</p>`;
+            }
+        }
+
+        // 測試無效手機號碼
+        async function testInvalidPhone() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '正在測試無效手機號碼...';
+            
+            try {
+                const surveyData = {
+                    memberId: "1234567890", // 無效的手機號碼
+                    phone: "1234567890",
+                    age: "26-45歲",
+                    gender: "女",
+                    location: "附近",
+                    purchase_frequency: "每週1~3次",
+                    purchase_location: ["麵包店"],
+                    purchase_time: "早上(6:00~12:00)",
+                    meal_type: "早餐",
+                    purchase_factors: ["健康", "好吃"],
+                    health_price: "會",
+                    natural_preference: "在意",
+                    taste_preference: ["原味"],
+                    bread_types: ["吐司"],
+                    bread_types_other: "",
+                    favorite_bread: "全麥吐司",
+                    desired_bread: "",
+                    lineUserId: "test_user_frontend_invalid",
+                    displayName: "前端測試用戶無效",
+                    timestamp: new Date().toISOString()
+                };
+
+                const response = await fetch('https://liff-survey-worker.survey-api.workers.dev/api/survey', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer d92ebeb6b6e1b6790d02879d7c2c04d0fae71f4a9b608523cc07a3add72a808d'
+                    },
+                    body: JSON.stringify(surveyData)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `<p style="color: green;">✅ 無效手機號碼結果：${JSON.stringify(data, null, 2)}</p>`;
+                } else {
+                    const errorData = await response.json();
+                    resultDiv.innerHTML = `<p style="color: orange;">⚠️ 無效手機號碼預期錯誤：${JSON.stringify(errorData, null, 2)}</p>`;
                 }
             } catch (error) {
                 resultDiv.innerHTML = `<p style="color: red;">❌ 網路錯誤：${error.message}</p>`;

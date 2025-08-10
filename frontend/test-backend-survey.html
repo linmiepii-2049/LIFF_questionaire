@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>後端問卷提交測試</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .button-group {
+            margin: 20px 0;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .result {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <h1>後端問卷提交測試</h1>
+    <p>這個頁面用來測試後端 API 的問卷提交功能，包括重複提交檢查和手機號碼格式驗證。</p>
+    
+    <div class="button-group">
+        <button onclick="testValidSubmit()">測試有效問卷提交</button>
+        <button onclick="testDuplicateSubmit()">測試重複提交</button>
+        <button onclick="testInvalidPhone()">測試無效手機號碼</button>
+        <button onclick="testInvalidData()">測試無效資料</button>
+        <button onclick="clearResults()">清除結果</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        const BACKEND_URL = 'http://localhost:3000'; // 根據您的後端設定調整
+        
+        function addResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${type}`;
+            resultDiv.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            resultsDiv.appendChild(resultDiv);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        // 測試有效問卷提交
+        async function testValidSubmit() {
+            addResult('正在測試有效問卷提交...', 'info');
+            
+            try {
+                const surveyData = {
+                    phone: "0912345678",
+                    age: "26-45歲",
+                    gender: "女",
+                    location: "附近",
+                    purchase_frequency: "每週1~3次",
+                    purchase_location: ["麵包店"],
+                    purchase_time: "早上(6:00~12:00)",
+                    meal_type: "早餐",
+                    purchase_factors: ["健康", "好吃"],
+                    health_price: "會",
+                    natural_preference: "在意",
+                    taste_preference: ["原味"],
+                    bread_types: ["吐司"],
+                    bread_types_other: "",
+                    favorite_bread: "全麥吐司",
+                    desired_bread: "",
+                    lineUserId: "test_user_backend",
+                    displayName: "後端測試用戶"
+                };
+
+                const response = await fetch(`${BACKEND_URL}/api/survey`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(surveyData)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addResult(`✅ 問卷提交成功：${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    addResult(`❌ 問卷提交失敗 (${response.status})：${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ 網路錯誤：${error.message}`, 'error');
+            }
+        }
+
+        // 測試重複提交
+        async function testDuplicateSubmit() {
+            addResult('正在測試重複提交...', 'info');
+            
+            try {
+                const surveyData = {
+                    phone: "0912345678", // 使用相同的手機號碼
+                    age: "25歲以下",
+                    gender: "男",
+                    location: "外地",
+                    purchase_frequency: "每週3次以上",
+                    purchase_location: ["便利商店"],
+                    purchase_time: "下午(12:00~17:00)",
+                    meal_type: "點心",
+                    purchase_factors: ["價格", "好吃"],
+                    health_price: "不會",
+                    natural_preference: "不在意",
+                    taste_preference: ["甜"],
+                    bread_types: ["台式、日式麵包"],
+                    bread_types_other: "",
+                    favorite_bread: "紅豆麵包",
+                    desired_bread: "",
+                    lineUserId: "test_user_backend_duplicate",
+                    displayName: "後端測試用戶重複"
+                };
+
+                const response = await fetch(`${BACKEND_URL}/api/survey`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(surveyData)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    if (data.success === false && data.message.includes('重複')) {
+                        addResult(`⚠️ 重複提交被正確阻止：${JSON.stringify(data, null, 2)}`, 'warning');
+                    } else {
+                        addResult(`❌ 重複提交應該被阻止但沒有：${JSON.stringify(data, null, 2)}`, 'error');
+                    }
+                } else {
+                    if (data.message && data.message.includes('重複')) {
+                        addResult(`⚠️ 重複提交被正確阻止：${JSON.stringify(data, null, 2)}`, 'warning');
+                    } else {
+                        addResult(`❌ 重複提交處理異常：${JSON.stringify(data, null, 2)}`, 'error');
+                    }
+                }
+            } catch (error) {
+                addResult(`❌ 網路錯誤：${error.message}`, 'error');
+            }
+        }
+
+        // 測試無效手機號碼
+        async function testInvalidPhone() {
+            addResult('正在測試無效手機號碼...', 'info');
+            
+            try {
+                const surveyData = {
+                    phone: "1234567890", // 無效的手機號碼
+                    age: "26-45歲",
+                    gender: "女",
+                    location: "附近",
+                    purchase_frequency: "每週1~3次",
+                    purchase_location: ["麵包店"],
+                    purchase_time: "早上(6:00~12:00)",
+                    meal_type: "早餐",
+                    purchase_factors: ["健康", "好吃"],
+                    health_price: "會",
+                    natural_preference: "在意",
+                    taste_preference: ["原味"],
+                    bread_types: ["吐司"],
+                    bread_types_other: "",
+                    favorite_bread: "全麥吐司",
+                    desired_bread: "",
+                    lineUserId: "test_user_backend_invalid",
+                    displayName: "後端測試用戶無效"
+                };
+
+                const response = await fetch(`${BACKEND_URL}/api/survey`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(surveyData)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addResult(`❌ 無效手機號碼應該被拒絕但沒有：${JSON.stringify(data, null, 2)}`, 'error');
+                } else {
+                    if (data.message && data.message.includes('手機號碼')) {
+                        addResult(`✅ 無效手機號碼被正確拒絕：${JSON.stringify(data, null, 2)}`, 'success');
+                    } else {
+                        addResult(`⚠️ 手機號碼驗證異常：${JSON.stringify(data, null, 2)}`, 'warning');
+                    }
+                }
+            } catch (error) {
+                addResult(`❌ 網路錯誤：${error.message}`, 'error');
+            }
+        }
+
+        // 測試無效資料
+        async function testInvalidData() {
+            addResult('正在測試無效資料...', 'info');
+            
+            try {
+                const surveyData = {
+                    phone: "0987654321",
+                    age: "無效年齡", // 無效的年齡
+                    gender: "無效性別", // 無效的性別
+                    location: "附近",
+                    purchase_frequency: "每週1~3次",
+                    purchase_location: ["麵包店"],
+                    purchase_time: "早上(6:00~12:00)",
+                    meal_type: "早餐",
+                    purchase_factors: ["健康", "好吃"],
+                    health_price: "會",
+                    natural_preference: "在意",
+                    taste_preference: ["原味"],
+                    bread_types: ["吐司"],
+                    bread_types_other: "",
+                    favorite_bread: "全麥吐司",
+                    desired_bread: "",
+                    lineUserId: "test_user_backend_invalid_data",
+                    displayName: "後端測試用戶無效資料"
+                };
+
+                const response = await fetch(`${BACKEND_URL}/api/survey`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(surveyData)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addResult(`❌ 無效資料應該被拒絕但沒有：${JSON.stringify(data, null, 2)}`, 'error');
+                } else {
+                    if (data.message && data.message.includes('驗證失敗')) {
+                        addResult(`✅ 無效資料被正確拒絕：${JSON.stringify(data, null, 2)}`, 'success');
+                    } else {
+                        addResult(`⚠️ 資料驗證異常：${JSON.stringify(data, null, 2)}`, 'warning');
+                    }
+                }
+            } catch (error) {
+                addResult(`❌ 網路錯誤：${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html> 

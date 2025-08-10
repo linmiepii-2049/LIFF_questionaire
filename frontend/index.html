@@ -262,6 +262,7 @@
                     <div class="form-group">
                         <label for="phone">手機號碼（作為會員ID使用） <span class="required">*</span></label>
                         <input type="tel" id="phone" name="phone" placeholder="請輸入手機號碼" maxlength="10" required>
+                        <div id="phoneError" class="error-message"></div>
                     </div>
 
                     <!-- 年齡 -->
@@ -627,7 +628,38 @@
                 if (e.target.value.length > 10) {
                     e.target.value = e.target.value.slice(0, 10);
                 }
+                
+                // 即時驗證手機號碼格式
+                validatePhoneFormat(e.target);
             });
+            
+            // 手機號碼格式驗證函數
+            function validatePhoneFormat(input) {
+                const phone = input.value;
+                const phoneError = document.getElementById('phoneError');
+                
+                if (phone.length === 0) {
+                    phoneError.textContent = '';
+                    input.style.borderColor = '#ddd';
+                    return true;
+                }
+                
+                if (phone.length !== 10) {
+                    phoneError.textContent = '手機號碼必須是10位數字';
+                    input.style.borderColor = '#e74c3c';
+                    return false;
+                }
+                
+                if (!/^09\d{8}$/.test(phone)) {
+                    phoneError.textContent = '手機號碼格式錯誤，請以09開頭';
+                    input.style.borderColor = '#e74c3c';
+                    return false;
+                }
+                
+                phoneError.textContent = '';
+                input.style.borderColor = '#00B900';
+                return true;
+            }
 
             // 單選按鈕樣式處理 - 整個區域都可點擊
             const radioOptions = document.querySelectorAll('.radio-option');
