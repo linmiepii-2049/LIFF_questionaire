@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>点击区域测试</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .radio-group, .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .radio-option, .checkbox-option {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            position: relative;
+        }
+
+        .radio-option:hover, .checkbox-option:hover {
+            border-color: #00B900;
+            background: #f8fff8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 185, 0, 0.1);
+        }
+
+        .radio-option.selected, .checkbox-option.selected {
+            border-color: #00B900;
+            background: #e8f5e8;
+            box-shadow: 0 2px 4px rgba(0, 185, 0, 0.2);
+        }
+
+        .radio-option input[type="radio"], .checkbox-option input[type="checkbox"] {
+            margin-right: 10px;
+            width: auto;
+            pointer-events: none;
+        }
+
+        .radio-option label, .checkbox-option label {
+            cursor: pointer;
+            flex: 1;
+            margin: 0;
+            user-select: none;
+        }
+
+        .radio-option:active, .checkbox-option:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 185, 0, 0.1);
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            .radio-option, .checkbox-option {
+                min-height: 44px;
+            }
+        }
+
+        .radio-option.selected::before, .checkbox-option.selected::before {
+            content: '✓';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #00B900;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .test-info {
+            background: #f0f8ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #00B900;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 点击区域测试页面</h1>
+        
+        <div class="test-info">
+            <strong>测试说明：</strong><br>
+            • 现在整个答案区域都可以点击，不仅仅是单选按钮或复选框<br>
+            • 悬停时会有视觉反馈（边框变绿、轻微上移、阴影效果）<br>
+            • 选中状态会显示绿色勾号 ✓<br>
+            • 触摸设备有更大的点击目标
+        </div>
+
+        <!-- 单选按钮测试 -->
+        <div class="form-group">
+            <label>年龄选择（单选）</label>
+            <div class="radio-group">
+                <div class="radio-option">
+                    <input type="radio" id="age1" name="age" value="25歲以下">
+                    <label for="age1">25歲以下</label>
+                </div>
+                <div class="radio-option">
+                    <input type="radio" id="age2" name="age" value="26-45歲">
+                    <label for="age2">26-45歲</label>
+                </div>
+                <div class="radio-option">
+                    <input type="radio" id="age3" name="age" value="46歲以上">
+                    <label for="age3">46歲以上</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- 复选框测试 -->
+        <div class="form-group">
+            <label>购买地点（多选）</label>
+            <div class="checkbox-group">
+                <div class="checkbox-option">
+                    <input type="checkbox" id="place1" name="purchase_location" value="麵包店">
+                    <label for="place1">麵包店</label>
+                </div>
+                <div class="checkbox-option">
+                    <input type="checkbox" id="place2" name="purchase_location" value="便利商店">
+                    <label for="place2">便利商店</label>
+                </div>
+                <div class="checkbox-option">
+                    <input type="checkbox" id="place3" name="purchase_location" value="量販超市">
+                    <label for="place3">量販超市</label>
+                </div>
+                <div class="checkbox-option">
+                    <input type="checkbox" id="place4" name="purchase_location" value="網購">
+                    <label for="place4">網購</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-info">
+            <strong>测试结果：</strong><br>
+            <span id="testResult">请点击上面的选项进行测试</span>
+        </div>
+    </div>
+
+    <script>
+        // 单选按钮处理
+        const radioOptions = document.querySelectorAll('.radio-option');
+        radioOptions.forEach(option => {
+            const radio = option.querySelector('input[type="radio"]');
+            
+            // 点击整个区域时触发单选按钮
+            option.addEventListener('click', function(e) {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') {
+                    return;
+                }
+                radio.click();
+            });
+            
+            radio.addEventListener('change', function() {
+                // 移除同组的选中样式
+                const name = this.name;
+                document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+                    r.closest('.radio-option').classList.remove('selected');
+                });
+                // 添加选中样式
+                this.closest('.radio-option').classList.add('selected');
+                updateTestResult();
+            });
+        });
+
+        // 复选框处理
+        const checkboxOptions = document.querySelectorAll('.checkbox-option');
+        checkboxOptions.forEach(option => {
+            const checkbox = option.querySelector('input[type="checkbox"]');
+            
+            // 点击整个区域时触发复选框
+            option.addEventListener('click', function(e) {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') {
+                    return;
+                }
+                checkbox.click();
+            });
+            
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    this.closest('.checkbox-option').classList.add('selected');
+                } else {
+                    this.closest('.checkbox-option').classList.remove('selected');
+                }
+                updateTestResult();
+            });
+        });
+
+        function updateTestResult() {
+            const resultDiv = document.getElementById('testResult');
+            const selectedAge = document.querySelector('input[name="age"]:checked');
+            const selectedPlaces = document.querySelectorAll('input[name="purchase_location"]:checked');
+            
+            let result = '';
+            if (selectedAge) {
+                result += `年龄: ${selectedAge.value}<br>`;
+            }
+            if (selectedPlaces.length > 0) {
+                const places = Array.from(selectedPlaces).map(p => p.value).join(', ');
+                result += `购买地点: ${places}`;
+            }
+            
+            resultDiv.innerHTML = result || '请点击上面的选项进行测试';
+        }
+    </script>
+</body>
+</html> 

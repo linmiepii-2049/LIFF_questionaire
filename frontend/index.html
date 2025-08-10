@@ -115,21 +115,58 @@
             cursor: pointer;
             transition: all 0.3s;
             background: white;
+            position: relative;
         }
 
         .radio-option:hover, .checkbox-option:hover {
             border-color: #00B900;
             background: #f8fff8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 185, 0, 0.1);
         }
 
         .radio-option.selected, .checkbox-option.selected {
             border-color: #00B900;
             background: #e8f5e8;
+            box-shadow: 0 2px 4px rgba(0, 185, 0, 0.2);
         }
 
         .radio-option input[type="radio"], .checkbox-option input[type="checkbox"] {
             margin-right: 10px;
             width: auto;
+            pointer-events: none;
+        }
+
+        .radio-option label, .checkbox-option label {
+            cursor: pointer;
+            flex: 1;
+            margin: 0;
+            user-select: none;
+        }
+
+        /* 添加点击反馈效果 */
+        .radio-option:active, .checkbox-option:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 185, 0, 0.1);
+        }
+
+        /* 添加触摸设备的优化 */
+        @media (hover: none) and (pointer: coarse) {
+            .radio-option, .checkbox-option {
+                min-height: 44px; /* 确保触摸目标足够大 */
+            }
+        }
+
+        /* 添加选中状态的视觉提示 */
+        .radio-option.selected::before, .checkbox-option.selected::before {
+            content: '✓';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #00B900;
+            font-weight: bold;
+            font-size: 18px;
         }
 
         .submit-btn {
@@ -580,10 +617,22 @@
                 }
             });
 
-            // 單選按鈕樣式處理
+            // 單選按鈕樣式處理 - 整個區域都可點擊
             const radioOptions = document.querySelectorAll('.radio-option');
             radioOptions.forEach(option => {
                 const radio = option.querySelector('input[type="radio"]');
+                
+                // 點擊整個區域時觸發單選按鈕
+                option.addEventListener('click', function(e) {
+                    // 如果點擊的是 input 或 label，不重複處理
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') {
+                        return;
+                    }
+                    
+                    // 觸發單選按鈕的點擊
+                    radio.click();
+                });
+                
                 radio.addEventListener('change', function() {
                     // 移除同組的選中樣式
                     const name = this.name;
@@ -595,10 +644,22 @@
                 });
             });
 
-            // 複選框樣式處理
+            // 複選框樣式處理 - 整個區域都可點擊
             const checkboxOptions = document.querySelectorAll('.checkbox-option');
             checkboxOptions.forEach(option => {
                 const checkbox = option.querySelector('input[type="checkbox"]');
+                
+                // 點擊整個區域時觸發複選框
+                option.addEventListener('click', function(e) {
+                    // 如果點擊的是 input 或 label，不重複處理
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') {
+                        return;
+                    }
+                    
+                    // 觸發複選框的點擊
+                    checkbox.click();
+                });
+                
                 checkbox.addEventListener('change', function() {
                     if (this.checked) {
                         this.closest('.checkbox-option').classList.add('selected');
