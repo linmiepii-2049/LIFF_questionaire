@@ -593,9 +593,9 @@
                                 if (liff.isLoggedIn()) {
                                     console.log('用戶已登入，可以獲取profile');
                                 } else {
-                                    console.log('用戶未登入，需要授權');
-                                    // 嘗試登入
-                                    liff.login();
+                                    console.log('用戶未登入，需要手動授權');
+                                    // 移除自動登入，避免重定向循環
+                                    // liff.login();
                                 }
                             }
                             initializeForm();
