@@ -66,3 +66,12 @@ service-account-key.json
 # 上傳檔案
 uploads/
 temp/ 
+
+# 其他
+backend/
+cloudflare-worker/
+start.sh 
+status.sh 
+stop.sh 
+export-csv.sh 
+.cursorrules
