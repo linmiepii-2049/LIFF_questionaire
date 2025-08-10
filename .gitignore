@@ -54,6 +54,9 @@ Thumbs.db
 coverage/
 .nyc_output/
 
+# 測試腳本資料夾
+test/
+
 # Google Cloud Functions
 .gcloudignore
 
