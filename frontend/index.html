@@ -565,6 +565,8 @@
 
     <script>
         // LIFF 初始化
+        let liffInitialized = false; // 防止重複初始化
+        
         window.onload = function() {
             // 生產環境的後端 API URL
             const API_BASE_URL = 'https://liff-survey-worker.survey-api.workers.dev';
@@ -579,25 +581,46 @@
                             console.log('LIFF 配置載入成功');
                         }
                         
+                        // 檢查是否已經初始化過
+                        if (liffInitialized) {
+                            if (config.data.environment === 'development') {
+                                console.log('⚠️ LIFF 已經初始化過，跳過重複初始化');
+                            }
+                            initializeForm();
+                            return;
+                        }
+                        
                         // 使用取得的 LIFF ID 進行初始化
                         liff.init({
                             liffId: config.data.liffId,
                             scope: 'profile openid'
                         }).then(() => {
+                            liffInitialized = true; // 標記已初始化
+                            
                             if (config.data.environment === 'development') {
                                 console.log('LIFF 初始化成功');
                                 console.log('LIFF 登入狀態：', liff.isLoggedIn());
                                 console.log('LIFF 環境：', liff.isInClient() ? 'LINE App內' : '外部瀏覽器');
-                                
-                                // 檢查用戶是否已授權
-                                if (liff.isLoggedIn()) {
+                            }
+                            
+                            // 檢查用戶是否已授權
+                            if (liff.isLoggedIn()) {
+                                if (config.data.environment === 'development') {
                                     console.log('用戶已登入，可以獲取profile');
-                                } else {
+                                }
+                            } else {
+                                if (config.data.environment === 'development') {
                                     console.log('用戶未登入，需要手動授權');
-                                    // 移除自動登入，避免重定向循環
-                                    // liff.login();
+                                }
+                                
+                                // 檢查是否在 LINE App 內
+                                if (!liff.isInClient()) {
+                                    if (config.data.environment === 'development') {
+                                        console.log('⚠️ 當前在外部瀏覽器，登入可能會有重定向');
+                                    }
                                 }
                             }
+                            
                             initializeForm();
                         }).catch((err) => {
                             if (config.data.environment === 'development') {
