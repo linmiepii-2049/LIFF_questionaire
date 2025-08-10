@@ -665,6 +665,7 @@
                 // 收集表單資料
                 const formData = new FormData(e.target);
                 const surveyData = {
+                    memberId: formData.get('phone'), // 使用手機號碼作為會員ID
                     phone: formData.get('phone'),
                     age: formData.get('age'),
                     gender: formData.get('gender'),
@@ -700,6 +701,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': 'Bearer d92ebeb6b6e1b6790d02879d7c2c04d0fae71f4a9b608523cc07a3add72a808d'
                     },
                     body: JSON.stringify(surveyData)
                 });
