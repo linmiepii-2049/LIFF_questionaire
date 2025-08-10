@@ -564,28 +564,37 @@
     </div>
 
     <script>
-        // LIFF 初始化
-        let liffInitialized = false; // 防止重複初始化
+        // LIFF 狀態管理
+        let liffInitialized = false;
+        let liffLoginAttempted = false;
         
         window.onload = function() {
             // 生產環境的後端 API URL
             const API_BASE_URL = 'https://liff-survey-worker.survey-api.workers.dev';
+            
+            // 檢查是否在 LINE App 內
+            const isInLineApp = window.navigator.userAgent.includes('Line');
+            
+            // 如果不在 LINE App 內，直接初始化表單，跳過 LIFF
+            if (!isInLineApp) {
+                console.log('不在 LINE App 內，跳過 LIFF 初始化');
+                initializeForm();
+                return;
+            }
+            
+            // 在 LINE App 內，嘗試初始化 LIFF
+            console.log('在 LINE App 內，開始初始化 LIFF');
             
             // 先取得 LIFF 配置
             fetch(`${API_BASE_URL}/api/config`)
                 .then(response => response.json())
                 .then(config => {
                     if (config.success && config.data.liffId) {
-                        // 只在開發環境顯示日誌
-                        if (config.data.environment === 'development') {
-                            console.log('LIFF 配置載入成功');
-                        }
+                        console.log('LIFF 配置載入成功');
                         
                         // 檢查是否已經初始化過
                         if (liffInitialized) {
-                            if (config.data.environment === 'development') {
-                                console.log('⚠️ LIFF 已經初始化過，跳過重複初始化');
-                            }
+                            console.log('⚠️ LIFF 已經初始化過，跳過重複初始化');
                             initializeForm();
                             return;
                         }
@@ -596,47 +605,31 @@
                             scope: 'profile openid'
                         }).then(() => {
                             liffInitialized = true; // 標記已初始化
-                            
-                            if (config.data.environment === 'development') {
-                                console.log('LIFF 初始化成功');
-                                console.log('LIFF 登入狀態：', liff.isLoggedIn());
-                                console.log('LIFF 環境：', liff.isInClient() ? 'LINE App內' : '外部瀏覽器');
-                            }
+                            console.log('LIFF 初始化成功');
+                            console.log('LIFF 登入狀態：', liff.isLoggedIn());
+                            console.log('LIFF 環境：', liff.isInClient() ? 'LINE App內' : '外部瀏覽器');
                             
                             // 檢查用戶是否已授權
                             if (liff.isLoggedIn()) {
-                                if (config.data.environment === 'development') {
-                                    console.log('用戶已登入，可以獲取profile');
-                                }
+                                console.log('用戶已登入，可以獲取profile');
                             } else {
-                                if (config.data.environment === 'development') {
-                                    console.log('用戶未登入，需要手動授權');
-                                }
-                                
-                                // 檢查是否在 LINE App 內
-                                if (!liff.isInClient()) {
-                                    if (config.data.environment === 'development') {
-                                        console.log('⚠️ 當前在外部瀏覽器，登入可能會有重定向');
-                                    }
-                                }
+                                console.log('用戶未登入，需要手動授權');
+                                // 不自動登入，讓用戶手動操作
                             }
                             
                             initializeForm();
                         }).catch((err) => {
-                            if (config.data.environment === 'development') {
-                                console.error('LIFF 初始化失敗', err);
-                            }
-                            initializeForm(); // 即使 LIFF 失敗也要初始化表單
+                            console.error('LIFF 初始化失敗', err);
+                            // LIFF 失敗時也要初始化表單
+                            initializeForm();
                         });
                     } else {
-                        if (config.data?.environment === 'development') {
-                            console.error('無法取得 LIFF 配置');
-                        }
+                        console.error('無法取得 LIFF 配置');
                         initializeForm(); // 沒有 LIFF 配置也要初始化表單
                     }
                 })
                 .catch((err) => {
-                    // 取得配置失敗時，我們無法知道環境，所以不顯示錯誤（生產環境考量）
+                    console.error('取得配置失敗:', err);
                     initializeForm(); // 取得配置失敗也要初始化表單
                 });
         };
